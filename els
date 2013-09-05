@@ -12,6 +12,8 @@ if ARGV.include?('--els-no-color')
 end
 
 @long_format = !ARGV.select{|a| a =~ /-.*(l|R)/}.empty?
+@classify = !ARGV.select{|a| a =~ /-.*(F)/}.empty?
+
 # possible long formatting
 # /bin/ls -lFnT
 # /usr/local/bin/gls -laFn --time-style=?
@@ -30,6 +32,12 @@ FileTypes = {
     # :icon       => '📁',
     :icon       => '📂',
     :extensions => %w{di} },
+  :fifo => {
+    :icon       => '🚿',
+    :extensions => %w{pi} },
+  :socket => {
+    :icon       => '🔌',
+    :extensions => %w{so} },
   :archive => {
     :icon       => '📦',
     :extensions => %w{tar tgz arj taz lzh lzma tlz txz zip z Z dz gz lz xz bz2 bz tbz tbz2 tz deb rpm jzr war ear sar rar ace zoo cpio 7z rz} },
@@ -88,16 +96,25 @@ output.lines.each do |line|
   icon = :blank
 
   # ln -F matching takes precedence
-  case line[-1]
-  when '/'
-    extension = 'di'
-    icon = :directory
-  when '*'
-    extension = 'ex'
-    icon = :executable
-  when '@'
-    extension = 'ln'
-    icon = :link
+  if %w{ / * @ | = }.include? line[-1]
+    case line[-1]
+    when '/'
+      extension = 'di'
+      icon = :directory
+    when '*'
+      extension = 'ex'
+      icon = :executable
+    when '@'
+      extension = 'ln'
+      icon = :link
+    when '|'
+      extension = 'pi'
+      icon = :fifo
+    when '='
+      extension = 'so'
+      icon = :socket
+    end
+    line.slice!(-1) unless @classify
   end
 
   # extension matching
@@ -190,7 +207,7 @@ else
       rows = rows + 1 if remainder > rows
       tries = tries + 1
     end
-  end while column_widths_are_good || tries > 10
+  end while column_widths_are_good && tries < 10
 
   columns       = final_columns
   rows          = final_rows
