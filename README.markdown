@@ -1,9 +1,9 @@
 els = ls with emoji icons
 -------------------------
 
-This is a simple wrapper for `ls` written in ruby to display emoji icons
-alongside file names. It was written and tested on MacOS X which uses the BSD
-version of ls. It will also work with the GNU ls.
+This is a simple wrapper for `ls` written in ruby (version 1.9.3 or higher) to
+display emoji icons alongside file names. It was written and tested on MacOS X
+which uses the BSD version of ls. It will also work with the GNU ls.
 
 All arguments are passed along to ls with the exception of --els-no-color which
 disables the built in color handling.
