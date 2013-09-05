@@ -8,6 +8,11 @@ version of ls. It will also work with the GNU ls.
 All arguments are passed along to ls with the exception of --els-no-color which
 disables the built in color handling.
 
+![](http://anthonydigirolamo.github.io/els/screen1.png)
+![](http://anthonydigirolamo.github.io/els/screen2.png)
+![](http://anthonydigirolamo.github.io/els/screen3.png)
+![](http://anthonydigirolamo.github.io/els/screen4.png)
+
 ### Installation
 
     curl -O https://raw.github.com/AnthonyDiGirolamo/els/master/els
