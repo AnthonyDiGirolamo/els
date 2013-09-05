@@ -8,14 +8,14 @@
     <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
 
-    <title>Els by AnthonyDiGirolamo</title>
+    <title>els by AnthonyDiGirolamo</title>
   </head>
 
   <body>
 
     <header>
       <div class="container">
-        <h1>Els</h1>
+        <h1>els</h1>
         <h2>Emoji + ls = els A wrapper script for ls to get icons alongside file names on the terminal.</h2>
 
         <section id="downloads">
@@ -38,19 +38,10 @@ version of ls. It will also work with the GNU ls.</p>
 <p>All arguments are passed along to ls with the exception of --els-no-color which
 disables the built in color handling.</p>
 
-<h3>
-<a name="colors" class="anchor" href="#colors"><span class="octicon octicon-link"></span></a>Colors</h3>
-
-<p><code>els</code> honors the <code>$LS_COLORS</code> environment variable and expects the GNU format
-(not BSD!). This is usually set by the <code>dircolors</code> command in Linux. If
-<code>$LS_COLORS</code> is not set els will use a default setting. This lets you use OSXs
-default BSD <code>ls</code> but still the GNU <code>$LS_COLORS</code> features.</p>
-
-<p>If you want the GNU version of <code>ls</code> on OSX use <a href="brew.sh">homebrew</a> to install
-coreutils. It will then be available as <code>gls</code>.</p>
-
-<pre><code>brew install coreutils
-</code></pre>
+<p><a href="http://anthonydigirolamo.github.io/els/screen1.png"><img src="http://anthonydigirolamo.github.io/els/screen1.png" alt=""></a>
+<a href="http://anthonydigirolamo.github.io/els/screen2.png"><img src="http://anthonydigirolamo.github.io/els/screen2.png" alt=""></a>
+<a href="http://anthonydigirolamo.github.io/els/screen3.png"><img src="http://anthonydigirolamo.github.io/els/screen3.png" alt=""></a>
+<a href="http://anthonydigirolamo.github.io/els/screen4.png"><img src="http://anthonydigirolamo.github.io/els/screen4.png" alt=""></a></p>
 
 <h3>
 <a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
@@ -59,13 +50,28 @@ coreutils. It will then be available as <code>gls</code>.</p>
 chmod +x els
 </code></pre>
 
-<p>and place it somewhere in your <code>$PATH</code></p>
+<p>Then place it somewhere in your <code>$PATH</code></p>
+
+<h3>
+<a name="colors" class="anchor" href="#colors"><span class="octicon octicon-link"></span></a>Colors</h3>
+
+<p><code>els</code> honors the <code>$LS_COLORS</code> environment variable and expects the GNU format
+(not BSD!). This is usually set by the <code>dircolors</code> command in Linux. If
+<code>$LS_COLORS</code> is not set <code>els</code> will use a default setting. This lets you use OSXs
+default BSD <code>ls</code> but still the GNU <code>$LS_COLORS</code> features.</p>
+
+<p>If you want the GNU version of <code>ls</code> on OSX use <a href="brew.sh">homebrew</a> to install
+coreutils. It will then be available as <code>gls</code>. (This isn't required).</p>
+
+<pre><code>brew install coreutils
+</code></pre>
 
 <h3>
 <a name="addingchanging-icons" class="anchor" href="#addingchanging-icons"><span class="octicon octicon-link"></span></a>Adding/Changing Icons</h3>
 
 <p>You can add your own icons and extensions by editing the source. Fork this repo
-and send me a pull request if you do so everyone can enjoy your changes.</p>
+and send me a pull request if you do so everyone can enjoy your changes. Here is
+the current setting:</p>
 
 <pre><code>FileTypes = {
   :executable =&gt; {
