@@ -1,0 +1,190 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+# require 'debugger'
+# require 'awesome_print'
+
+# possible long formatting
+# /bin/ls -lFnT
+# /usr/local/bin/gls -laFn --time-style=?
+
+@screen_width = `tput cols`.chomp.to_i
+@using_color = true # if ARGV.include?("--color=auto") || ARGV.include?("-G")
+if ARGV.include?('--els-no-color')
+  @using_color = false
+  ARGV.delete('--els-no-color')
+end
+
+output = `/bin/ls -F #{ARGV.join(' ')}`
+exit $?.exitstatus if $?.exitstatus != 0
+
+if @using_color
+  lscolors = 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lz=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.axa=00;36:*.oga=00;36:*.spx=00;36:*.xspf=00;36:'
+  lscolors = ENV['LS_COLORS'] if ENV['LS_COLORS']
+  # Convert lscolors into a hash, key = extension w/o *. and value is the color
+  @file_colors = Hash[ lscolors.split(':').collect{|e| e.gsub(/\*\./,'')}.collect{|e| e.split('=')} ]
+end
+
+def colored_file_name(name, extension = false)
+  if @using_color
+    ext_color = @file_colors[extension]       if extension
+    return "\e[#{ext_color}m" + name + "\e[m" if ext_color
+  end
+  return name # if no color
+end
+
+COLUMN_SPACING = 2
+Separator = '  '
+Icons = {
+  :executable     => '🚀',
+  :link           => '🔗',
+  :directory      => '📁',
+
+  :archive        => '📦',
+  :cd             => '💿',
+  :pdf            => '📕',
+  :image          => '🗻',
+  :text           => '📄',
+
+  :blank          => ' ',
+  :directory_open => '📂',
+}
+Extensions = {
+  :executable => %{ex},
+  :link       => %{ln},
+  :directory  => %{di},
+
+  :archive    => %w{tar tgz arj taz lzh lzma tlz txz zip z Z dz gz lz xz bz2 bz tbz tbz2 tz deb rpm jzr war ear sar rar ace zoo cpio 7z rz},
+  :cd         => %{dmg iso cue img},
+  :pdf        => %{pdf},
+  :image      => %{gif tiff jpg jpeg png},
+}
+
+final_output            = []
+final_output_with_color = []
+max_length              = 0
+
+output.lines.each do |line|
+  line.chomp!
+  extension = File.extname(line).downcase
+  extension.slice!(0) if extension[0] == "."
+  icon = :blank
+
+  # ln -F matching takes precedence
+  case line[-1]
+  when '/'
+    extension = 'di'
+    icon = :directory
+  when '*'
+    extension = 'ex'
+    icon = :executable
+  when '@'
+    extension = 'ln'
+    icon = :link
+  end
+
+  # extension matching
+  if extension.size > 0
+    if Extensions[:archive].include?(extension)
+      icon = :archive
+    elsif Extensions[:cd].include?(extension)
+      icon = :cd
+    elsif Extensions[:pdf].include?(extension)
+      icon = :pdf
+    elsif Extensions[:image].include?(extension)
+      icon = :image
+    end
+  end
+
+  # use text icon if no icon found
+  icon = :text if icon == :blank
+
+  final_output            << Icons[icon] + Separator + line
+  final_output_with_color << Icons[icon] + Separator + colored_file_name(line, extension)
+
+  max_length = final_output.last.size+COLUMN_SPACING if final_output.last.size+COLUMN_SPACING > max_length
+end
+
+def calculate_column_widths(final_output, rows, columns)
+  column_indexes = []
+  column_widths  = []
+  for c in 0..columns-1 do
+    column_indexes << [c*rows..c*rows+rows-1]
+    column_widths  << final_output.values_at(*column_indexes.last).collect{|l|l.size+COLUMN_SPACING if l}.compact.max
+  end
+  # ap column_widths
+  return column_widths
+end
+
+if !ARGV.select{|a| a =~ /-.*l/}.empty?
+  # no special printing for long format
+  puts final_output_with_color
+else
+  # column format printing
+  # puts "screen:     #{@screen_width}"
+  # puts "max size:   #{max_length}"
+
+  # first guess at number of columns and rows
+  columns   = @screen_width / max_length
+  columns   = 1 if columns < 1
+  rows      = final_output.size / columns
+  remainder = final_output.size % columns
+  rows      = rows + 1 if remainder > 0
+
+  tries         = 1
+  final_columns = columns
+  final_rows    = rows
+
+  # do while loop
+  begin
+    grid_capacity = rows * columns
+
+    # puts "Try: #{tries}"
+    # puts "columns x rows = capacity / files:   #{columns} x #{rows} = #{grid_capacity} / #{final_output.size}"
+    # puts "remainder: #{remainder}"
+
+    column_widths = calculate_column_widths(final_output, rows, columns)
+    column_widths_sum = column_widths.reduce{|sum, n| sum+n if n}
+
+    column_widths_are_good = !column_widths.include?(nil) && column_widths_sum <= @screen_width
+    # column_widths_are_good if we dont have too many cols & sum of column widths is less than the screen_width
+    column_widths_are_good = true if !column_widths_are_good && tries == 1 # first guess was bad
+    if column_widths_are_good
+      # puts "columns_sum <= screen_width:   #{column_widths_sum} < #{@screen_width}"
+      # only save the column x rows if the grid_capacity is large enough
+      if grid_capacity >= final_output.size
+        final_columns       = columns
+        final_rows          = rows
+        final_column_widths = column_widths
+      end
+
+      # increment columns and try again
+      columns = columns + 1
+      rows      = final_output.size / columns
+      remainder = final_output.size % columns
+      rows = rows + 1 if remainder > rows
+      tries = tries + 1
+    end
+  end while column_widths_are_good || tries > 10
+
+  columns       = final_columns
+  rows          = final_rows
+  column_widths = final_column_widths
+
+  # puts "FINAL columns x rows = capacity / files:   #{columns} x #{rows} = #{grid_capacity} / #{final_output.size}"
+
+  for r in 0..rows-1 do
+    row_indexes = []
+    spaces      = []
+    for c in 0..columns-1 do
+      row_indexes <<  r + (0+c*rows)
+      if final_output[row_indexes.last]
+        spaces << column_widths[c] - final_output[row_indexes.last].size
+        STDOUT.write final_output_with_color[row_indexes.last]
+        STDOUT.write " " * spaces.last
+      end
+    end
+    STDOUT.write "\n"
+  end
+
+end
