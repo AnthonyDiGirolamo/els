@@ -223,10 +223,9 @@ else
       if final_output[row_indexes.last]
         spaces << column_widths[c] - final_output[row_indexes.last].size
         STDOUT.write final_output_with_color[row_indexes.last]
-        STDOUT.write " " * spaces.last
+        STDOUT.write " " * spaces.last if columns > 1
       end
     end
     STDOUT.write "\n"
   end
-
 end
