@@ -35,13 +35,11 @@
 display emoji icons alongside file names. It was written and tested on MacOS X
 which uses the BSD version of ls. It will also work with the GNU ls.</p>
 
-<p>All arguments are passed along to ls with the exception of --els-no-color which
-disables the built in color handling.</p>
-
 <p><a href="http://anthonydigirolamo.github.io/els/screen1.png"><img src="http://anthonydigirolamo.github.io/els/screen1.png" alt=""></a>
 <a href="http://anthonydigirolamo.github.io/els/screen2.png"><img src="http://anthonydigirolamo.github.io/els/screen2.png" alt=""></a>
 <a href="http://anthonydigirolamo.github.io/els/screen3.png"><img src="http://anthonydigirolamo.github.io/els/screen3.png" alt=""></a>
-<a href="http://anthonydigirolamo.github.io/els/screen4.png"><img src="http://anthonydigirolamo.github.io/els/screen4.png" alt=""></a></p>
+<a href="http://anthonydigirolamo.github.io/els/screen4.png"><img src="http://anthonydigirolamo.github.io/els/screen4.png" alt=""></a>
+<a href="http://anthonydigirolamo.github.io/els/screen5.png"><img src="http://anthonydigirolamo.github.io/els/screen4.png" alt=""></a></p>
 
 <h3>
 <a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
@@ -51,6 +49,62 @@ chmod +x els
 </code></pre>
 
 <p>Then place it somewhere in your <code>$PATH</code></p>
+
+<h3>
+<a name="options" class="anchor" href="#options"><span class="octicon octicon-link"></span></a>Options</h3>
+
+<p>All arguments are passed along to ls with the exception of:</p>
+
+<ul>
+<li>
+<code>--els-no-color</code> disables the built in color handling.</li>
+<li>
+<code>--els-icons=fontawesome</code> uses icons provided by
+<a href="http://fortawesome.github.io/Font-Awesome/">FontAwesome</a>
+</li>
+</ul><p>Using FontAwesome requires that you install the <code>FontAwesome.otf</code> by double
+clicking on it in OSX. To actually use it in your terminal you need
+<a href="http://www.iterm2.com/">iTerm2</a> for OSX and change your Non-ASCII Font to
+FontAwesome in your profile preferences as in this screen shot:</p>
+
+<p><a href="http://anthonydigirolamo.github.io/els/iterm2config.png"><img src="http://anthonydigirolamo.github.io/els/screen4.png" alt=""></a></p>
+
+<p>To use it in Linux within gnome-terminal you need to put <code>FontAwesome.otf</code>
+inside your <code>~/.fonts/</code> folder on Linux. And create a
+<code>~/.config/fontconfig/fonts.conf</code> file with the following content:</p>
+
+<pre><code>&lt;?xml version='1.0'?&gt;
+&lt;!DOCTYPE fontconfig SYSTEM 'fonts.dtd'&gt;
+&lt;fontconfig&gt;
+&lt;!-- Font families --&gt;
+&lt;alias&gt;
+  &lt;family&gt;serif&lt;/family&gt;
+  &lt;prefer&gt;
+    &lt;family&gt;DejaVu Serif&lt;/family&gt;
+    &lt;family&gt;Android Emoji&lt;/family&gt;
+    &lt;family&gt;Symbola&lt;/family&gt;
+  &lt;/prefer&gt;
+&lt;/alias&gt;
+&lt;alias&gt;
+  &lt;family&gt;sans-serif&lt;/family&gt;
+  &lt;prefer&gt;
+    &lt;family&gt;DejaVu Sans&lt;/family&gt;
+    &lt;family&gt;Android Emoji&lt;/family&gt;
+    &lt;family&gt;Symbola&lt;/family&gt;
+  &lt;/prefer&gt;
+&lt;/alias&gt;
+&lt;alias&gt;
+  &lt;family&gt;monospace&lt;/family&gt;
+  &lt;prefer&gt;
+    &lt;family&gt;Ubuntu Mono&lt;/family&gt; &lt;!-- change this to your prefered monospace font if you like --&gt;
+    &lt;family&gt;DejaVu Sans Mono&lt;/family&gt;
+    &lt;family&gt;Android Emoji&lt;/family&gt; &lt;!-- put the Symbola line before this if you prefer Symbola to Android Emoji --&gt;
+    &lt;family&gt;Symbola&lt;/family&gt;
+    &lt;family&gt;FontAwesome&lt;/family&gt;
+  &lt;/prefer&gt;
+&lt;/alias&gt;
+&lt;/fontconfig&gt;
+</code></pre>
 
 <h3>
 <a name="colors" class="anchor" href="#colors"><span class="octicon octicon-link"></span></a>Colors</h3>
@@ -70,51 +124,7 @@ coreutils. It will then be available as <code>gls</code>. (This isn't required).
 <a name="addingchanging-icons" class="anchor" href="#addingchanging-icons"><span class="octicon octicon-link"></span></a>Adding/Changing Icons</h3>
 
 <p>You can add your own icons and extensions by editing the source. Fork this repo
-and send me a pull request if you do so everyone can enjoy your changes. Here is
-the current setting:</p>
-
-<pre><code>FileTypes = {
-  :executable =&gt; {
-    :icon       =&gt; '🚀',
-    :extensions =&gt; %w{ex} },
-  :link =&gt; {
-    :icon       =&gt; '🔗',
-    :extensions =&gt; %w{ln} },
-  :directory =&gt; {
-    :icon       =&gt; '📂',
-    :extensions =&gt; %w{di} },
-  :fifo =&gt; {
-    :icon       =&gt; '🚿',
-    :extensions =&gt; %w{pi} },
-  :socket =&gt; {
-    :icon       =&gt; '🔌',
-    :extensions =&gt; %w{so} },
-  :archive =&gt; {
-    :icon       =&gt; '📦',
-    :extensions =&gt; %w{tar tgz arj taz lzh lzma tlz txz zip z Z dz gz lz xz bz2 bz tbz tbz2 tz deb rpm jzr war ear sar rar ace zoo cpio 7z rz} },
-  :cd =&gt; {
-    :icon       =&gt; '💿',
-    :extensions =&gt; %w{dmg iso cue img} },
-  :pdf =&gt; {
-    :icon       =&gt; '📕',
-    :extensions =&gt; %w{pdf} },
-  :image =&gt; {
-    :icon       =&gt; '🗻',
-    :extensions =&gt; %w{gif tiff jpg jpeg png} },
-  :text =&gt; {
-    :icon       =&gt; '📄',
-    :extensions =&gt; %w{txt} },
-  :sound =&gt; {
-    :icon       =&gt; '🔈',
-    :extensions =&gt; %w{mp3 wav ogg aiff} },
-  :movie =&gt; {
-    :icon       =&gt; '📺',
-    :extensions =&gt; %w{mp4 avi mkv mov} },
-  :blank =&gt; {
-    :icon       =&gt; ' ',
-    :extensions =&gt; %w{} },
-}
-</code></pre>
+and send me a pull request if you do so everyone can enjoy your changes.</p>
 
 <h3>
 <a name="notes-on-implementation" class="anchor" href="#notes-on-implementation"><span class="octicon octicon-link"></span></a>Notes on implementation</h3>
