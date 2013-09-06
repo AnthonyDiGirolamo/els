@@ -11,6 +11,13 @@ if ARGV.include?('--els-no-color')
   ARGV.delete('--els-no-color')
 end
 
+if ARGV.include?('--els-icons=fontawesome')
+  @using_fontawesome = true
+  ARGV.delete('--els-icons=fontawesome')
+else
+  @using_emoji = true
+end
+
 @long_format = !ARGV.select{|a| a =~ /-.*(l|R)/}.empty?
 @classify = !ARGV.select{|a| a =~ /-.*(F)/}.empty?
 
@@ -21,48 +28,63 @@ end
 output = `/bin/ls -F #{ARGV.join(' ')}`
 exit $?.exitstatus if $?.exitstatus != 0
 
-FileTypes = {
-  :executable => {
-    :icon       => '🚀',
-    :extensions => %w{ex} },
-  :link => {
-    :icon       => '🔗',
-    :extensions => %w{ln} },
-  :directory => {
-    # :icon       => '📁',
-    :icon       => '📂',
-    :extensions => %w{di} },
-  :fifo => {
-    :icon       => '🚿',
-    :extensions => %w{pi} },
-  :socket => {
-    :icon       => '🔌',
-    :extensions => %w{so} },
-  :archive => {
-    :icon       => '📦',
-    :extensions => %w{tar tgz arj taz lzh lzma tlz txz zip z Z dz gz lz xz bz2 bz tbz tbz2 tz deb rpm jzr war ear sar rar ace zoo cpio 7z rz} },
-  :cd => {
-    :icon       => '💿',
-    :extensions => %w{dmg iso cue img} },
-  :pdf => {
-    :icon       => '📕',
-    :extensions => %w{pdf} },
-  :image => {
-    :icon       => '🗻',
-    :extensions => %w{gif tiff jpg jpeg png} },
-  :text => {
-    :icon       => '📄',
-    :extensions => %w{txt} },
-  :sound => {
-    :icon       => '🔈',
-    :extensions => %w{mp3 wav ogg aiff} },
-  :movie => {
-    :icon       => '📺',
-    :extensions => %w{mp4 avi mkv mov} },
-  :blank => {
-    :icon       => ' ',
-    :extensions => %w{} },
+Extensions = {
+  :executable => %w{ex},
+  :link       => %w{ln},
+  :directory  => %w{di},
+  :fifo       => %w{pi},
+  :socket     => %w{so},
+  :archive    => %w{tar tgz arj taz lzh lzma tlz txz zip z Z dz gz lz xz bz2 bz tbz tbz2 tz deb rpm jzr war ear sar rar ace zoo cpio 7z rz},
+  :cd         => %w{dmg iso cue img},
+  :pdf        => %w{pdf},
+  :image      => %w{gif tiff jpg jpeg png},
+  :text       => %w{txt c cpp h rb py},
+  :sound      => %w{mp3 wav ogg aiff},
+  :movie      => %w{mp4 avi mkv mov},
+  :file       => %w{},
+  :blank      => %w{},
 }
+
+if @using_fontawesome
+  Icons = {
+    :executable => '',
+    :link       => '',
+    :directory  => '',
+    :fifo       => '',
+    :socket     => '',
+    :archive    => '',
+    :cd         => '',
+    :pdf        => '',
+    :image      => '',
+    :text       => '',
+    :sound      => '',
+    :movie      => '',
+    :file       => '',
+    :blank      => ' ',
+  }
+else
+  Icons = {
+    :executable => '🚀',
+    :link       => '🔗',
+    :directory  => '📂',
+    :fifo       => '🚿',
+    :socket     => '🔌',
+    :archive    => '📦',
+    :cd         => '💿',
+    :pdf        => '📕',
+    :image      => '🗻',
+    :text       => '📄',
+    :sound      => '🔈',
+    :movie      => '📺',
+    :file       => '📄',
+    :blank      => ' ',
+  }
+end
+FileTypes = {}
+Extensions.keys.each { |key| FileTypes[key] = {:icon => Icons[key], :extensions => Extensions[key]} }
+
+if @using_fontawesome
+end
 
 ColumnSpacing = 2
 Separator = '  '
@@ -135,10 +157,14 @@ output.lines.each do |line|
     # we have a file
 
     # use text icon if no icon found
-    icon = :text if icon == :blank
+    icon = :file if icon == :blank
 
     final_output            << FileTypes[icon][:icon] + Separator + line
-    final_output_with_color << FileTypes[icon][:icon] + Separator + colored_file_name(line, extension)
+    if @using_fontawesome
+      final_output_with_color << colored_file_name(FileTypes[icon][:icon] + Separator + line, extension)
+    else
+      final_output_with_color << FileTypes[icon][:icon] + Separator + colored_file_name(line, extension)
+    end
   end
 
   max_length = final_output.last.size+ColumnSpacing if final_output.last.size+ColumnSpacing > max_length

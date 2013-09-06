@@ -5,13 +5,12 @@ This is a simple wrapper for `ls` written in ruby (version 1.9.3 or higher) to
 display emoji icons alongside file names. It was written and tested on MacOS X
 which uses the BSD version of ls. It will also work with the GNU ls.
 
-All arguments are passed along to ls with the exception of --els-no-color which
-disables the built in color handling.
 
 [![](http://anthonydigirolamo.github.io/els/screen1.png)](http://anthonydigirolamo.github.io/els/screen1.png)
 [![](http://anthonydigirolamo.github.io/els/screen2.png)](http://anthonydigirolamo.github.io/els/screen2.png)
 [![](http://anthonydigirolamo.github.io/els/screen3.png)](http://anthonydigirolamo.github.io/els/screen3.png)
 [![](http://anthonydigirolamo.github.io/els/screen4.png)](http://anthonydigirolamo.github.io/els/screen4.png)
+[![](http://anthonydigirolamo.github.io/els/screen4.png)](http://anthonydigirolamo.github.io/els/screen5.png)
 
 ### Installation
 
@@ -19,6 +18,57 @@ disables the built in color handling.
     chmod +x els
 
 Then place it somewhere in your `$PATH`
+
+### Options
+
+All arguments are passed along to ls with the exception of:
+
+* `--els-no-color` disables the built in color handling.
+* `--els-icons=fontawesome` uses icons provided by
+  [FontAwesome](http://fortawesome.github.io/Font-Awesome/)
+
+Using FontAwesome requires that you install the `FontAwesome.otf` by double
+clicking on it in OSX. To actually use it in your terminal you need
+[iTerm2](http://www.iterm2.com/) for OSX and change your Non-ASCII Font to
+FontAwesome in your profile preferences as in this screen shot:
+
+[![](http://anthonydigirolamo.github.io/els/screen4.png)](http://anthonydigirolamo.github.io/els/iterm2config.png)
+
+To use it in Linux within gnome-terminal you need to put `FontAwesome.otf`
+inside your `~/.fonts/` folder on Linux. And create a
+`~/.config/fontconfig/fonts.conf` file with the following content:
+
+    <?xml version='1.0'?>
+    <!DOCTYPE fontconfig SYSTEM 'fonts.dtd'>
+    <fontconfig>
+    <!-- Font families -->
+    <alias>
+      <family>serif</family>
+      <prefer>
+        <family>DejaVu Serif</family>
+        <family>Android Emoji</family>
+        <family>Symbola</family>
+      </prefer>
+    </alias>
+    <alias>
+      <family>sans-serif</family>
+      <prefer>
+        <family>DejaVu Sans</family>
+        <family>Android Emoji</family>
+        <family>Symbola</family>
+      </prefer>
+    </alias>
+    <alias>
+      <family>monospace</family>
+      <prefer>
+        <family>Ubuntu Mono</family> <!-- change this to your prefered monospace font if you like -->
+        <family>DejaVu Sans Mono</family>
+        <family>Android Emoji</family> <!-- put the Symbola line before this if you prefer Symbola to Android Emoji -->
+        <family>Symbola</family>
+        <family>FontAwesome</family>
+      </prefer>
+    </alias>
+    </fontconfig>
 
 ### Colors
 
@@ -35,50 +85,7 @@ coreutils. It will then be available as `gls`. (This isn't required).
 ### Adding/Changing Icons
 
 You can add your own icons and extensions by editing the source. Fork this repo
-and send me a pull request if you do so everyone can enjoy your changes. Here is
-the current setting:
-
-    FileTypes = {
-      :executable => {
-        :icon       => '🚀',
-        :extensions => %w{ex} },
-      :link => {
-        :icon       => '🔗',
-        :extensions => %w{ln} },
-      :directory => {
-        :icon       => '📂',
-        :extensions => %w{di} },
-      :fifo => {
-        :icon       => '🚿',
-        :extensions => %w{pi} },
-      :socket => {
-        :icon       => '🔌',
-        :extensions => %w{so} },
-      :archive => {
-        :icon       => '📦',
-        :extensions => %w{tar tgz arj taz lzh lzma tlz txz zip z Z dz gz lz xz bz2 bz tbz tbz2 tz deb rpm jzr war ear sar rar ace zoo cpio 7z rz} },
-      :cd => {
-        :icon       => '💿',
-        :extensions => %w{dmg iso cue img} },
-      :pdf => {
-        :icon       => '📕',
-        :extensions => %w{pdf} },
-      :image => {
-        :icon       => '🗻',
-        :extensions => %w{gif tiff jpg jpeg png} },
-      :text => {
-        :icon       => '📄',
-        :extensions => %w{txt} },
-      :sound => {
-        :icon       => '🔈',
-        :extensions => %w{mp3 wav ogg aiff} },
-      :movie => {
-        :icon       => '📺',
-        :extensions => %w{mp4 avi mkv mov} },
-      :blank => {
-        :icon       => ' ',
-        :extensions => %w{} },
-    }
+and send me a pull request if you do so everyone can enjoy your changes.
 
 ### Notes on implementation
 
