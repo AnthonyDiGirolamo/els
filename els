@@ -4,8 +4,7 @@
 # require 'debugger'
 # require 'awesome_print'
 
-@screen_width = `tput cols`.chomp.to_i
-@using_color = true # if ARGV.include?("--color=auto") || ARGV.include?("-G")
+@using_color = true
 if ARGV.include?('--els-no-color')
   @using_color = false
   ARGV.delete('--els-no-color')
@@ -18,8 +17,17 @@ else
   @using_emoji = true
 end
 
-@long_format = !ARGV.select{|a| a =~ /-.*(l|R)/}.empty?
-@classify = !ARGV.select{|a| a =~ /-.*(F)/}.empty?
+if !ARGV.select{|a| a =~ /-.*R/}.empty?
+  puts "els with -R is not recommended"
+  exit 1
+end
+
+@long_format = !ARGV.select{|a| a =~ /-.*l/}.empty?
+@classify = !ARGV.select{|a| a =~ /-.*F/}.empty?
+
+# if @long_format
+# ARGV << '-FnT'
+# end
 
 # possible long formatting
 # /bin/ls -lFnT
@@ -27,6 +35,12 @@ end
 
 output = `/bin/ls -F #{ARGV.join(' ')}`
 exit $?.exitstatus if $?.exitstatus != 0
+
+if @long_format
+  first_file      = `/bin/ls`.split("\n")[0]
+  first_file_line = output.split("\n")[1]
+  @file_column = first_file_line.index(first_file)
+end
 
 Extensions = {
   :executable => %w{ex},
@@ -160,11 +174,21 @@ output.lines.each do |line|
     icon = :file if icon == :blank
 
     final_output            << FileTypes[icon][:icon] + Separator + line
-    if @using_fontawesome
-      final_output_with_color << colored_file_name(FileTypes[icon][:icon] + Separator + line, extension)
+
+    if @long_format
+      metadata  = line[0..@file_column-1] + ' '
+      file_name = line[@file_column..line.size]
     else
-      final_output_with_color << FileTypes[icon][:icon] + Separator + colored_file_name(line, extension)
+      metadata  = ''
+      file_name = line
     end
+
+    if @using_fontawesome
+      final_output_with_color << metadata + colored_file_name(FileTypes[icon][:icon] + Separator + file_name, extension)
+    else
+      final_output_with_color << metadata + FileTypes[icon][:icon] + Separator + colored_file_name(file_name, extension)
+    end
+
   end
 
   max_length = final_output.last.size+ColumnSpacing if final_output.last.size+ColumnSpacing > max_length
@@ -187,6 +211,7 @@ if @long_format
   # no special printing for long format
   puts final_output_with_color
 else
+  @screen_width = `tput cols`.chomp.to_i
   # column format printing
   # puts "screen:     #{@screen_width}"
   # puts "max size:   #{max_length}"
