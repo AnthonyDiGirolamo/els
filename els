@@ -25,22 +25,11 @@ end
 @long_format = !ARGV.select{|a| a =~ /-.*(l|n|g|o)/}.empty?
 @classify = !ARGV.select{|a| a =~ /-.*F/}.empty?
 
-# if @long_format
-# ARGV << '-FnT'
-# end
-
-# possible long formatting
-# /bin/ls -lFnT
-# /usr/local/bin/gls -laFn --time-style=?
-
 output = `/bin/ls -F #{ARGV.join(' ')}`
 exit $?.exitstatus if $?.exitstatus != 0
 
 if @long_format
-  puts ARGV
-  puts "--"
   newargv = ARGV.collect{|a| a =~ /-.*(l|n|g|o)/ ? a.delete('lngo') : a }.reject{|a| a == '-'}
-  puts newargv
   first_file      = `/bin/ls #{newargv.join(' ')}`.split("\n")[0]
   first_file_line = output.split("\n")[1]
   @file_column = first_file_line.index(first_file)
