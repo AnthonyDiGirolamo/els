@@ -37,7 +37,8 @@ output = `/bin/ls -F #{ARGV.join(' ')}`
 exit $?.exitstatus if $?.exitstatus != 0
 
 if @long_format
-  first_file      = `/bin/ls`.split("\n")[0]
+  newargv = ARGV.collect{|a| a =~ /-.*l/ ? a.delete('l') : a }.reject{|a| a == '-'}
+  first_file      = `/bin/ls #{newargv.join(' ')}`.split("\n")[0]
   first_file_line = output.split("\n")[1]
   @file_column = first_file_line.index(first_file)
 end
