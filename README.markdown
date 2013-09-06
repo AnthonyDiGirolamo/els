@@ -10,7 +10,7 @@ which uses the BSD version of ls. It will also work with the GNU ls.
 [![](http://anthonydigirolamo.github.io/els/screen2.png)](http://anthonydigirolamo.github.io/els/screen2.png)
 [![](http://anthonydigirolamo.github.io/els/screen3.png)](http://anthonydigirolamo.github.io/els/screen3.png)
 [![](http://anthonydigirolamo.github.io/els/screen4.png)](http://anthonydigirolamo.github.io/els/screen4.png)
-[![](http://anthonydigirolamo.github.io/els/screen4.png)](http://anthonydigirolamo.github.io/els/screen5.png)
+[![](http://anthonydigirolamo.github.io/els/screen5.png)](http://anthonydigirolamo.github.io/els/screen5.png)
 
 ### Installation
 
@@ -32,7 +32,7 @@ clicking on it in OSX. To actually use it in your terminal you need
 [iTerm2](http://www.iterm2.com/) for OSX and change your Non-ASCII Font to
 FontAwesome in your profile preferences as in this screen shot:
 
-[![](http://anthonydigirolamo.github.io/els/screen4.png)](http://anthonydigirolamo.github.io/els/iterm2config.png)
+[![](http://anthonydigirolamo.github.io/els/iterm2config.png)](http://anthonydigirolamo.github.io/els/iterm2config.png)
 
 To use it in Linux within gnome-terminal you need to put `FontAwesome.otf`
 inside your `~/.fonts/` folder on Linux. And create a
