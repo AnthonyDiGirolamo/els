@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 # require 'debugger'
-# require 'awesome_print'
+# require 'pp'
 
 @using_color = true
 if ARGV.include?('--els-no-color')
@@ -36,20 +36,20 @@ if @long_format
 end
 
 Extensions = {
-  :executable => %w{ex},
-  :link       => %w{ln},
-  :directory  => %w{di},
-  :fifo       => %w{pi},
-  :socket     => %w{so},
-  :archive    => %w{tar tgz arj taz lzh lzma tlz txz zip z Z dz gz lz xz bz2 bz tbz tbz2 tz deb rpm jzr war ear sar rar ace zoo cpio 7z rz},
-  :cd         => %w{dmg iso cue img},
-  :pdf        => %w{pdf},
-  :image      => %w{gif tiff jpg jpeg png},
-  :text       => %w{txt c cpp h rb py},
-  :sound      => %w{mp3 wav ogg aiff},
-  :movie      => %w{mp4 avi mkv mov},
-  :file       => %w{},
-  :blank      => %w{},
+  :executable => %w[ex],
+  :link       => %w[ln],
+  :directory  => %w[di],
+  :fifo       => %w[pi],
+  :socket     => %w[so],
+  :archive    => %w[tar tgz arj taz lzh lzma tlz txz zip z Z dz gz lz xz bz2 bz tbz tbz2 tz deb rpm jzr war ear sar rar ace zoo cpio 7z rz],
+  :cd         => %w[dmg iso cue img],
+  :pdf        => %w[pdf],
+  :image      => %w[gif tiff jpg jpeg png],
+  :text       => %w[txt c cpp h rb py],
+  :sound      => %w[mp3 wav ogg aiff],
+  :movie      => %w[mp4 avi mkv mov],
+  :file       => %w[],
+  :blank      => %w[],
 }
 
 if @using_fontawesome
@@ -90,9 +90,6 @@ end
 FileTypes = {}
 Extensions.keys.each { |key| FileTypes[key] = {:icon => Icons[key], :extensions => Extensions[key]} }
 
-if @using_fontawesome
-end
-
 ColumnSpacing = 2
 Separator = '  '
 
@@ -125,7 +122,7 @@ output.lines.each do |line|
   icon = :blank
 
   # ln -F matching takes precedence
-  if %w{ / * @ | = }.include? line[-1]
+  if %w[ / * @ | = ].include? line[-1]
     case line[-1]
     when '/'
       extension = 'di'
@@ -157,7 +154,7 @@ output.lines.each do |line|
   end
 
   # if blank line or not a file
-  if line.size == 0 || line =~ /^total \d+$/ || (@long_format && line[-1] == ':')
+  if line.size == 0 || (@long_format && line =~ /^total \d+$/) || (@long_format && line[-1] == ':')
     final_output << line
     final_output_with_color << line
   else
@@ -195,7 +192,7 @@ def calculate_column_widths(final_output, rows, columns)
     column_indexes << [c*rows..c*rows+rows-1]
     column_widths  << final_output.values_at(*column_indexes.last).collect{|l|l.size+ColumnSpacing if l}.compact.max
   end
-  # ap column_widths
+  # pp column_widths
   return column_widths
 end
 
@@ -206,8 +203,8 @@ if @long_format
 else
   @screen_width = `tput cols`.chomp.to_i
   # column format printing
-  # puts "screen:     #{@screen_width}"
-  # puts "max size:   #{max_length}"
+  # p "screen:     #{@screen_width}"
+  # p "max size:   #{max_length}"
 
   # first guess at number of columns and rows
   columns   = @screen_width / max_length
@@ -225,9 +222,9 @@ else
   begin
     grid_capacity = rows * columns
 
-    # puts "Try: #{tries}"
-    # puts "columns x rows = capacity / files:   #{columns} x #{rows} = #{grid_capacity} / #{final_output.size}"
-    # puts "remainder: #{remainder}"
+    # p "Try: #{tries}"
+    # p "columns x rows = capacity / files:   #{columns} x #{rows} = #{grid_capacity} / #{final_output.size}"
+    # p "remainder: #{remainder}"
 
     column_widths = calculate_column_widths(final_output, rows, columns)
     column_widths_sum = column_widths.reduce{|sum, n| sum+n if n}
@@ -236,7 +233,7 @@ else
     # column_widths_are_good if we dont have too many cols & sum of column widths is less than the screen_width
     column_widths_are_good = true if !column_widths_are_good && tries == 1 # first guess was bad
     if column_widths_are_good
-      # puts "columns_sum <= screen_width:   #{column_widths_sum} < #{@screen_width}"
+      # p "columns_sum <= screen_width:   #{column_widths_sum} < #{@screen_width}"
       # only save the column x rows if the grid_capacity is large enough
       if grid_capacity >= final_output.size
         final_columns       = columns
@@ -257,7 +254,7 @@ else
   rows          = final_rows
   column_widths = final_column_widths
 
-  # puts "FINAL columns x rows = capacity / files:   #{columns} x #{rows} = #{grid_capacity} / #{final_output.size}"
+  # p "FINAL columns x rows = capacity / files:   #{columns} x #{rows} = #{grid_capacity} / #{final_output.size}"
 
   for r in 0..rows-1 do
     row_indexes = []
