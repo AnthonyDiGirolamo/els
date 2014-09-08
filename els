@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
-# require 'debugger'
 # require 'pp'
 
 @using_color = true
@@ -27,6 +26,8 @@ end
 
 output = `/bin/ls -F #{ARGV.join(' ')}`
 exit $?.exitstatus if $?.exitstatus != 0
+
+exit 0 if output == ""
 
 if @long_format
   newargv = ARGV.collect{|a| a =~ /-.*(l|n|g|o)/ ? a.delete('lngo') : a }.reject{|a| a == '-'}
@@ -74,7 +75,7 @@ else
     :executable => '🚀',
     :link       => '🔗',
     :directory  => '📂',
-    :fifo       => '🚿',
+    :fifo       => '🔁',
     :socket     => '🔌',
     :archive    => '📦',
     :cd         => '💿',
