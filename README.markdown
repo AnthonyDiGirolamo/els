@@ -14,7 +14,7 @@ which uses the BSD version of ls. It will also work with the GNU ls.
 
 ### Installation
 
-    curl -O https://raw.github.com/AnthonyDiGirolamo/els/master/els
+    curl -O https://raw.githubusercontent.com/AnthonyDiGirolamo/els/master/els
     chmod +x els
 
 Then place it somewhere in your `$PATH`
