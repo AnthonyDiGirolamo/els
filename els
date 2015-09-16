@@ -1,29 +1,24 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
-# require 'pp'
+@flags = {
+  :no_color    => '--els-no-color',
+  :fontawesome => '--els-icons=fontawesome'
+}
 
-@using_color = true
-if ARGV.include?('--els-no-color')
-  @using_color = false
-  ARGV.delete('--els-no-color')
-end
+@els_options = []
+@els_options << ARGV.delete(@flags[:no_color])    if ARGV.include?(@flags[:no_color])
+@els_options << ARGV.delete(@flags[:fontawesome]) if ARGV.include?(@flags[:fontawesome])
 
-if ARGV.include?('--els-icons=fontawesome')
-  @using_fontawesome = true
-  ARGV.delete('--els-icons=fontawesome')
-else
-  @using_emoji = true
-end
-
-if !ARGV.select{|a| a =~ /-.*R/}.empty?
+if ARGV.find_index{|a| a =~ /-.*R/}
   puts "els with -R is not recommended"
   exit 1
 end
 
 @long_format = !ARGV.select{|a| a =~ /-.*(l|n|g|o)/}.empty?
-@classify = !ARGV.select{|a| a =~ /-.*F/}.empty?
+@classify    = !ARGV.select{|a| a =~ /-.*F/}.empty?
 
+# call ls and save its output
 output = `/bin/ls -F #{ARGV.join(' ')}`
 exit $?.exitstatus if $?.exitstatus != 0
 
@@ -54,7 +49,8 @@ Extensions = {
   :blank      => %w[],
 }
 
-if @using_fontawesome
+# Set Icon Set
+if @els_options.include? @flags[:fontawesome]
   Icons = {
     :executable => '',
     :link       => '',
@@ -72,7 +68,7 @@ if @using_fontawesome
     :file       => '',
     :blank      => ' ',
   }
-else
+else # emoji
   Icons = {
     :executable => '🚀',
     :link       => '🔗',
@@ -91,14 +87,15 @@ else
     :blank      => ' ',
   }
 end
+
 FileTypes = {}
 Extensions.keys.each { |key| FileTypes[key] = {:icon => Icons[key], :extensions => Extensions[key]} }
 
 ColumnSpacing = 2
-Separator = '  '
+Separator     = '  '
 
-# if we want colors, get $LS_COLORS if it exists, otherwise use a standard
-if @using_color
+unless @els_options.include? @flags[:no_color]
+  # if we want colors, get $LS_COLORS if it exists, otherwise use a standard
   lscolors = ENV.fetch('LS_COLORS') {'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lz=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.axa=00;36:*.oga=00;36:*.spx=00;36:*.xspf=00;36:'}
   # Convert lscolors into a hash, key = extension w/o *. and value is the color
   @file_colors = Hash[ lscolors.split(':').collect{|e| e.gsub(/\*\./,'')}.collect{|e| e.split('=')} ]
@@ -106,7 +103,7 @@ end
 
 # Print a filename highlighted with colors in $LS_COLORS
 def colored_file_name(name, extension = false)
-  if @using_color
+  unless @els_options.include? @flags[:no_color]
     ext_color = @file_colors[extension]       if extension
     return "\e[#{ext_color}m" + name + "\e[m" if ext_color
   end
@@ -176,7 +173,7 @@ output.lines.each do |line|
       file_name = line
     end
 
-    if @using_fontawesome
+    if @icon_style == :fontawesome
       final_output_with_color << metadata + colored_file_name(FileTypes[icon][:icon] + Separator + file_name, extension)
     else
       final_output_with_color << metadata + FileTypes[icon][:icon] + Separator + colored_file_name(file_name, extension)
