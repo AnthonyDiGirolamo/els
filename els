@@ -16,13 +16,15 @@ else
   @using_emoji = true
 end
 
-if !ARGV.select{|a| a =~ /-.*R/}.empty?
-  puts "els with -R is not recommended"
+if !ARGV.select{|a| a =~ /\A([-]{1}\w*R\w*|[-]{2}(recursive))\z/}.empty?
+  puts "els with -R or --recursive is not recommended"
   exit 1
 end
 
-@long_format = !ARGV.select{|a| a =~ /-.*(l|n|g|o)/}.empty?
-@classify = !ARGV.select{|a| a =~ /-.*F/}.empty?
+# true if ARGV contains -l, -n, --numeric-uid-gid, -g or -o
+@long_format = !ARGV.select{|a| a =~ /\A([-]{1}\w*(l|g|n|o)\w*|[-]{2}(numeric-uid-gid))\z/}.empty?
+# true if ARGV contains -F or --classify
+@classify = !ARGV.select{|a| a =~ /\A([-]{1}\w*[F]\w*|[-]{2}(classify))\z/}.empty?
 
 output = `/bin/ls -F #{ARGV.join(' ')}`
 exit $?.exitstatus if $?.exitstatus != 0
@@ -30,7 +32,10 @@ exit $?.exitstatus if $?.exitstatus != 0
 exit 0 if output == ""
 
 if @long_format
-  newargv = ARGV.collect{|a| a =~ /-.*(l|n|g|o)/ ? a.delete('lngo') : a }.reject{|a| a == '-'}
+  if ARGV.include?('--numeric-uid-gid')
+    ARGV.delete('--numeric-uid-gid')
+  end
+  newargv = ARGV.collect{|a| a =~ /\A[-]{1}\w*(l|g|n|o)\w*\z/ ? a.delete('lngo') : a }.reject{|a| a == '-'}
   first_file      = `/bin/ls #{newargv.join(' ')}`.split("\n")[0]
   first_file_line = output.split("\n")[1]
   @file_column = first_file_line.index(first_file)
@@ -47,7 +52,7 @@ Extensions = {
   :pdf        => %w[pdf],
   :image      => %w[gif tiff jpg jpeg png],
   :text       => %w[txt c cpp h rb],
-  :python     => %w[py],
+  :python     => %w[py pyc pyo pyd],
   :sound      => %w[mp3 wav ogg aiff],
   :movie      => %w[mp4 avi mkv mov],
   :file       => %w[],
