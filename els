@@ -28,18 +28,34 @@ end
 # true if ARGV contains -1
 @one_per_line = !ARGV.select{|a| a =~ /\A[-]{1}\w*1\w*\z/}.empty?
 
-output = `/bin/ls -F #{ARGV.join(' ')}`
+# wrap dirs in quotes and strip trailing '/' (unless dir == / ) so dirs with spaces don't fail with ls
+# and escape ["$] so the shell doesn't complain about unescaped chars
+folders = ARGV.collect{|a| "\"" + a.gsub(/^(.+)\/$/, '\1').gsub("\"","\\\"").gsub("\$", "\\\$")  + "\"" if !a.start_with?("-") }.compact
+argvs = ARGV.collect{|a| a if a.start_with?("-") }.compact
+newargv = argvs.compact + folders.compact
+
+output = `/bin/ls -F #{newargv.join(' ')}`
 exit $?.exitstatus if $?.exitstatus != 0
 
 exit 0 if output == ""
 
 if @long_format
-  if ARGV.include?('--numeric-uid-gid')
-    ARGV.delete('--numeric-uid-gid')
+  newargv.delete('--numeric-uid-gid') unless !newargv.include?('--numeric-uid-gid')
+  newargv = newargv.collect{|a| a =~ /\A[-]{1}(\w|1)*(l|g|n|o)(\w|1)*\z/ ? a.delete('lngo') : a }.reject{|a| a == '-'}
+
+  first_file_line = output.split("\n")[0]
+  if first_file_line =~ /^total \d+[.]?\d*[KMGTPEZY]?$/
+    first_file_line = output.split("\n")[1]
+    indx = 0
+  elsif first_file_line =~ /^.*[:]$/
+    first_file_line = output.split("\n")[2]
+    indx = 1
+  else
+    first_file_line = output.split("\n")[0]
+    indx = 0
   end
-  newargv = ARGV.collect{|a| a =~ /\A[-]{1}(\w|1)*(l|g|n|o)(\w|1)*\z/ ? a.delete('lngo') : a }.reject{|a| a == '-'}
-  first_file      = `/bin/ls #{newargv.join(' ')}`.split("\n")[0]
-  first_file_line = output.split("\n")[1]
+
+  first_file      = `/bin/ls #{newargv.join(' ')}`.split("\n")[indx]
   @file_column = first_file_line.index(first_file)
 end
 
@@ -49,14 +65,14 @@ Extensions = {
   :directory  => %w[di],
   :fifo       => %w[pi],
   :socket     => %w[so],
-  :archive    => %w[tar tgz arj taz lzh lzma tlz txz zip z Z dz gz lz xz bz2 bz tbz tbz2 tz deb rpm jzr war ear sar rar ace zoo cpio 7z rz],
+  :archive    => %w[7z ace apk arj bz bz2 cab cpio deb dz ear gem gz gzip jzr lha lz lzh lzma rar rpm rz sar tar taz tbz tbz2 tgz tlz txz tz war xz z Z zip zoo],
   :cd         => %w[dmg iso cue img],
   :pdf        => %w[pdf],
-  :image      => %w[gif tiff jpg jpeg png],
-  :text       => %w[txt c cpp h rb],
+  :image      => %w[gif tiff jpg jpeg png ico bmp],
+  :text       => %w[txt c h markdown md xul],
   :python     => %w[py pyc pyo pyd],
-  :sound      => %w[mp3 wav ogg aiff],
-  :movie      => %w[mp4 avi mkv mov],
+  :sound      => %w[aiff flac mp3 ogg wav],
+  :movie      => %w[mp4 avi mkv mov webm flv mpeg mpg],
   :file       => %w[],
   :blank      => %w[],
 }
