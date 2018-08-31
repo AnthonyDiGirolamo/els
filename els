@@ -164,7 +164,8 @@ output.lines.each do |line|
   end
 
   # if blank line or not a file
-  if line.size == 0 || (@long_format && line =~ /^total \d+[kK]?$/) || (@long_format && line[-1] == ':')
+  # K,M,G,T,P,E,Z and Y are all the ls SIZE chars 
+  if line.size == 0 || (@long_format && line =~ /^total \d+[.]?\d*[KMGTPEZY]?$$/) || (@long_format && line[-1] == ':')
     final_output << line
     final_output_with_color << line
   else
