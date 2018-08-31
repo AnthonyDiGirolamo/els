@@ -16,23 +16,46 @@ else
   @using_emoji = true
 end
 
-if !ARGV.select{|a| a =~ /-.*R/}.empty?
-  puts "els with -R is not recommended"
+if !ARGV.select{|a| a =~ /\A([-]{1}\w*R\w*|[-]{2}(recursive))\z/}.empty?
+  puts "els with -R or --recursive is not recommended"
   exit 1
 end
 
-@long_format = !ARGV.select{|a| a =~ /-.*(l|n|g|o)/}.empty?
-@classify = !ARGV.select{|a| a =~ /-.*F/}.empty?
+# true if ARGV contains -l, -n, --numeric-uid-gid, -g or -o
+@long_format = !ARGV.select{|a| a =~ /\A([-]{1}(\w|1)*(l|g|n|o)(\w|1)*|[-]{2}(numeric-uid-gid))\z/}.empty?
+# true if ARGV contains -F or --classify
+@classify = !ARGV.select{|a| a =~ /\A([-]{1}(\w|1)*[F](\w|1)*|[-]{2}(classify))\z/}.empty?
+# true if ARGV contains -1
+@one_per_line = !ARGV.select{|a| a =~ /\A[-]{1}\w*1\w*\z/}.empty?
 
-output = `/bin/ls -F #{ARGV.join(' ')}`
+# wrap dirs in quotes and strip trailing '/' (unless dir == / ) so dirs with spaces don't fail with ls
+# and escape ["$] so the shell doesn't complain about unescaped chars
+folders = ARGV.collect{|a| "\"" + a.gsub(/^(.+)\/$/, '\1').gsub("\"","\\\"").gsub("\$", "\\\$")  + "\"" if !a.start_with?("-") }.compact
+argvs = ARGV.collect{|a| a if a.start_with?("-") }.compact
+newargv = argvs.compact + folders.compact
+
+output = `/bin/ls -F #{newargv.join(' ')}`
 exit $?.exitstatus if $?.exitstatus != 0
 
 exit 0 if output == ""
 
 if @long_format
-  newargv = ARGV.collect{|a| a =~ /-.*(l|n|g|o)/ ? a.delete('lngo') : a }.reject{|a| a == '-'}
-  first_file      = `/bin/ls #{newargv.join(' ')}`.split("\n")[0]
-  first_file_line = output.split("\n")[1]
+  newargv.delete('--numeric-uid-gid') unless !newargv.include?('--numeric-uid-gid')
+  newargv = newargv.collect{|a| a =~ /\A[-]{1}(\w|1)*(l|g|n|o)(\w|1)*\z/ ? a.delete('lngo') : a }.reject{|a| a == '-'}
+
+  first_file_line = output.split("\n")[0]
+  if first_file_line =~ /^total \d+[.]?\d*[KMGTPEZY]?$/
+    first_file_line = output.split("\n")[1]
+    indx = 0
+  elsif first_file_line =~ /^.*[:]$/
+    first_file_line = output.split("\n")[2]
+    indx = 1
+  else
+    first_file_line = output.split("\n")[0]
+    indx = 0
+  end
+
+  first_file      = `/bin/ls #{newargv.join(' ')}`.split("\n")[indx]
   @file_column = first_file_line.index(first_file)
 end
 
@@ -42,14 +65,14 @@ Extensions = {
   :directory  => %w[di],
   :fifo       => %w[pi],
   :socket     => %w[so],
-  :archive    => %w[tar tgz arj taz lzh lzma tlz txz zip z Z dz gz lz xz bz2 bz tbz tbz2 tz deb rpm jzr war ear sar rar ace zoo cpio 7z rz],
+  :archive    => %w[7z ace apk arj bz bz2 cab cpio deb dz ear gem gz gzip jzr lha lz lzh lzma rar rpm rz sar tar taz tbz tbz2 tgz tlz txz tz war xz z Z zip zoo],
   :cd         => %w[dmg iso cue img],
   :pdf        => %w[pdf],
-  :image      => %w[gif tiff jpg jpeg png],
-  :text       => %w[txt c cpp h rb],
-  :python     => %w[py],
-  :sound      => %w[mp3 wav ogg aiff],
-  :movie      => %w[mp4 avi mkv mov],
+  :image      => %w[gif tiff jpg jpeg png ico bmp],
+  :text       => %w[txt c h markdown md xul],
+  :python     => %w[py pyc pyo pyd],
+  :sound      => %w[aiff flac mp3 ogg wav],
+  :movie      => %w[mp4 avi mkv mov webm flv mpeg mpg],
   :file       => %w[],
   :blank      => %w[],
 }
@@ -157,7 +180,8 @@ output.lines.each do |line|
   end
 
   # if blank line or not a file
-  if line.size == 0 || (@long_format && line =~ /^total \d+$/) || (@long_format && line[-1] == ':')
+  # K,M,G,T,P,E,Z and Y are all the ls SIZE chars 
+  if line.size == 0 || (@long_format && line =~ /^total \d+[.]?\d*[KMGTPEZY]?$/) || (@long_format && line[-1] == ':')
     final_output << line
     final_output_with_color << line
   else
@@ -200,7 +224,7 @@ def calculate_column_widths(final_output, rows, columns)
 end
 
 # print output
-if @long_format
+if @long_format || @one_per_line
   # no special printing for long format
   puts final_output_with_color
 else
