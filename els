@@ -16,13 +16,13 @@ else
   @using_emoji = true
 end
 
-if !ARGV.select{|a| a =~ /-.*R/}.empty?
+if !ARGV.select{|a| a =~ /^-.*R/}.empty?
   puts "els with -R is not recommended"
   exit 1
 end
 
-@long_format = !ARGV.select{|a| a =~ /-.*(l|n|g|o)/}.empty?
-@classify = !ARGV.select{|a| a =~ /-.*F/}.empty?
+@long_format = !ARGV.select{|a| a =~ /^-.*(l|n|g|o)/}.empty?
+@classify = !ARGV.select{|a| a =~ /^-.*F/}.empty?
 
 output = `/bin/ls -F #{ARGV.join(' ')}`
 exit $?.exitstatus if $?.exitstatus != 0
@@ -30,7 +30,7 @@ exit $?.exitstatus if $?.exitstatus != 0
 exit 0 if output == ""
 
 if @long_format
-  newargv = ARGV.collect{|a| a =~ /-.*(l|n|g|o)/ ? a.delete('lngo') : a }.reject{|a| a == '-'}
+  newargv = ARGV.collect{|a| a =~ /^-.*(l|n|g|o)/ ? a.delete('lngo') : a }.reject{|a| a == '-'}
   first_file      = `/bin/ls #{newargv.join(' ')}`.split("\n")[0]
   first_file_line = output.split("\n")[1]
   @file_column = first_file_line.index(first_file)
